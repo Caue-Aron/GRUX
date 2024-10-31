@@ -6,16 +6,7 @@ call the Update() and Draw() functions at the right time and it should work just
 package widgets
 
 import (
-	"main/widgets/color"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
-)
-
-const (
-	DisplayStateActive = iota
-	DisplayStateSelected
-	DisplayStatePressed
-	DisplayStateInactive
 )
 
 type Button struct {
@@ -23,7 +14,7 @@ type Button struct {
 	*rl.Font
 	text    string
 	textPos rl.Vector2
-	state   uint8
+	state   State
 }
 
 func (btn *Button) Deactivate() {
@@ -34,21 +25,21 @@ func (btn *Button) Draw() {
 	switch btn.state {
 
 	case DisplayStateActive:
-		rl.DrawRectangleGradientV(int32(btn.X), int32(btn.Y), int32(btn.Width), int32(btn.Height), color.PanelHighlight, color.PanelShadow)
+		rl.DrawRectangleGradientV(int32(btn.X), int32(btn.Y), int32(btn.Width), int32(btn.Height), ColorPanelHighlight, ColorPanelShadow)
 	case DisplayStatePressed:
-		rl.DrawRectangleRec(btn.Rectangle, color.PanelPressed)
+		rl.DrawRectangleRec(btn.Rectangle, ColorPanelPressed)
 	case DisplayStateSelected:
-		rl.DrawRectangleGradientV(int32(btn.X), int32(btn.Y), int32(btn.Width), int32(btn.Height), color.PanelHighlight, color.PanelShadowHighlight)
+		rl.DrawRectangleGradientV(int32(btn.X), int32(btn.Y), int32(btn.Width), int32(btn.Height), ColorPanelHighlight, ColorPanelShadowHighlight)
 	case DisplayStateInactive:
-		rl.DrawRectangleRec(btn.Rectangle, color.PanelInactive)
-		rl.DrawTextEx(*btn.Font, btn.text, btn.textPos, float32(btn.Font.BaseSize), float32(0.45), color.TextInactive)
-		rl.DrawRectangleLines(int32(btn.X-1), int32(btn.Y-1), int32(btn.Width+2), int32(btn.Height+2), color.PanelBorder)
+		rl.DrawRectangleRec(btn.Rectangle, ColorPanelInactive)
+		rl.DrawTextEx(*btn.Font, btn.text, btn.textPos, float32(btn.Font.BaseSize), float32(0.45), ColorTextInactive)
+		rl.DrawRectangleLines(int32(btn.X-1), int32(btn.Y-1), int32(btn.Width+2), int32(btn.Height+2), ColorPanelBorder)
 		return
 	}
 
-	rl.DrawTextEx(*btn.Font, btn.text, btn.textPos, float32(btn.Font.BaseSize), float32(0.45), color.TextActive)
-	rl.DrawRectangleLinesEx(btn.Rectangle, 1, color.PanelInnerBorder)
-	rl.DrawRectangleLines(int32(btn.X-1), int32(btn.Y-1), int32(btn.Width)+3, int32(btn.Height+2), color.PanelBorder)
+	rl.DrawTextEx(*btn.Font, btn.text, btn.textPos, float32(btn.Font.BaseSize), float32(0.45), ColorTextActive)
+	rl.DrawRectangleLinesEx(btn.Rectangle, 1, ColorPanelInnerBorder)
+	rl.DrawRectangleLines(int32(btn.X-1), int32(btn.Y-1), int32(btn.Width)+3, int32(btn.Height+2), ColorPanelBorder)
 }
 
 func (btn *Button) Update() {

@@ -1,17 +1,26 @@
 package widgets
 
-import rl "github.com/gen2brain/raylib-go/raylib"
-
 type Container interface {
-	CalculateSpace(limits rl.Rectangle) rl.Rectangle
-	AddChild(child *WidgetDisplayer)
-	RemoveChildren(index uint8)
-	SetSpaceDistribuition(distribuition ...uint8)
-	SetChildrenMargin(margin uint)
+	WidgetDisplayer
+	AddChild(child WidgetDisplayer, space uint8)
+	RemoveChildren(index ...uint8)
+	SetDistribuition(distribuition ...uint8)
+	SetChildMargin(margin uint)
 	SetPadding(padding uint)
 }
 
 type BaseContainer struct {
+	BaseWidget
 	padding     uint
 	childMargin uint
+}
+
+type SingleContainer struct {
+	BaseContainer
+	child WidgetDisplayer
+}
+
+type MultiContainer struct {
+	BaseContainer
+	children []WidgetDisplayer
 }
