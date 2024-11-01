@@ -15,8 +15,11 @@ func main() {
 	wg.InitWidgetsContext()
 	defer wg.DestroyWidgetsContext()
 
-	panel := wg.NewPanel()
-	panel.SetContainer(wg.NewHorizontalGrid([]wg.WidgetDisplayer{}), 50, 50)
+	panel := wg.NewPanel(wg.PanelStyleNormal | wg.PanelStyleDoubleBordered)
+	panel.CalculateBounds(&rl.Rectangle{
+		X: 100, Y: 100,
+		Width: 600, Height: 250})
+	panel.SetContainer(wg.NewSingleContainer(wg.NewPanel(wg.PanelStyleSunken), 0))
 
 	rl.SetTargetFPS(60)
 	for !rl.WindowShouldClose() {

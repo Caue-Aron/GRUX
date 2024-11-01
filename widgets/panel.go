@@ -3,9 +3,13 @@ package widgets
 import rl "github.com/gen2brain/raylib-go/raylib"
 
 const (
-	StylePanelRegular = iota
-	StylePanelBorderless
-	StylePanelSunken
+	PanelStyleNormal = Bitmask(1) << iota
+	PanelStyleSunken
+	PanelStyleRaised
+	PanelStyleDoubleBordered
+	// PanelStyleThickBordered
+	PanelStyleBorderless
+	PanelStyleShadowless
 )
 
 type Panel struct {
@@ -13,62 +17,89 @@ type Panel struct {
 	container Container
 }
 
-const (
-	PanelStyleNormal = 1 << iota
-	PanelStyleSunken
-	PanelStyleRaised
-	PanelStyleDoubleBordered
-	PanelStyleThickBordered
-	PanelStyleBorderless
-)
-
-func NewPanel() *Panel {
+func NewPanel(style Bitmask) *Panel {
 	panel := &Panel{
 		container: nil,
 		BaseWidget: BaseWidget{
-			Bitmask: PanelStyleNormal,
+			Bitmask: style,
 			State:   DisplayStateActive,
-			Rectangle: rl.Rectangle{
-				X: 100, Y: 100,
-				Width: 600, Height: 250},
 		},
 	}
 
 	return panel
 }
 
-func (this *Panel) SetContainer(container Container, distribuition ...uint8) bool {
+func (this *Panel) SetContainer(container Container) bool {
 	if this.container != nil {
 		return false
 	}
 
 	this.container = container
-	container.CalculateBounds(&this.Rectangle, distribuition...)
+	this.container.CalculateBounds(this.GetWorkingArea())
 
 	return true
 }
 
-func (this *Panel) GetBounds() rl.Rectangle {
-	return this.Rectangle
-}
-
 func (this *Panel) Update() {
-	this.container.Update()
+	if this.container != nil {
+		this.container.Update()
+	}
 }
 
 func (this *Panel) Draw() {
-	rl.DrawRectangleLinesEx(this.Rectangle, 1, ColorPanelBorder)
-	rl.DrawRectangleLines(int32(this.X)+1, int32(this.Y)+1, int32(this.Width)-2, int32(this.Height)-2, ColorPanelInactive)
-}
+	borderOffset := float32(1)
+	shadowOffset := float32(0)
 
-func (this *Panel) CalculateBounds(limits *rl.Rectangle) {
+	if this.HasFlag(PanelStyleSunken) {
+		rl.DrawRectangleRec(this.Rectangle, ColorPanelSunken)
+		borderOffset = 0
+		shadowOffset = 1
+	} else {
+		rl.DrawRectangleRec(this.Rectangle, ColorBackground)
+	}
 
+	if !this.HasFlag(PanelStyleBorderless) {
+		rl.DrawRectangleLinesEx(*ScaleRect(&this.Rectangle, borderOffset), 1, ColorPanelBorder)
+
+		if this.HasFlag(PanelStyleDoubleBordered) {
+			rl.DrawRectangleLinesEx(*ScaleRect(&this.Rectangle, DoubleBorderOffset), 1, ColorPanelBorder)
+		}
+	}
+	if !this.HasFlag(PanelStyleShadowless) {
+		rl.DrawRectangleLinesEx(*ScaleRect(&this.Rectangle, shadowOffset), 1, ColorPanelShadow)
+	}
+
+	// Non panel specific
+	if this.container != nil {
+		this.container.Draw()
+	}
 }
 
 func (this *Panel) Activate() {
-
+	this.BaseWidget.Activate()
+	if this.container != nil {
+		this.container.Activate()
+	}
 }
 
 func (this *Panel) Deactivate() {
+	this.BaseWidget.Deactivate()
+	if this.container != nil {
+		this.container.Deactivate()
+	}
+}
 
+func (this *Panel) CalculateBounds(limits *rl.Rectangle) {
+	this.BaseWidget.CalculateBounds(limits)
+	if this.container != nil {
+		this.container.CalculateBounds(limits)
+	}
+}
+
+func (this *Panel) GetWorkingArea() *rl.Rectangle {
+	if this.HasFlag(PanelStyleDoubleBordered) {
+		return ScaleRect(&this.Rectangle, NaturalPadding*2)
+	}
+
+	return ScaleRect(&this.Rectangle, NaturalPadding)
 }
